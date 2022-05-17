@@ -2,10 +2,26 @@
 $pdo = new PDO('mysql:host=localhost;port=3306;dbname=products_crud', 'root', '');
 $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-echo "<pre>";
-var_dump($_POST);
-echo "</pre>";
+echo $_SERVER['REQUEST_METHOD'];
 
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+	// save the data without the image
+	$title = $_POST['title'];
+	$description = $_POST['description'];
+	$price = $_POST['price'];
+	$date = date('Y-m-d H:i:s');
+
+	// insert the data into the database and save it
+	$statement = $pdo->prepare("INSERT INTO products (image, title, description, price, created_at) VALUES (:image, :title, :description, :price, :date)");
+
+	$statement->bindValue(':image', '');
+	$statement->bindValue(':title', $title);
+	$statement->bindValue(':description', $description);
+	$statement->bindValue(':price', $price);
+	$statement->bindValue(':date', $date);
+
+	$statement->execute();
+}
 ?>
 <!doctype html>
 <html lang="en">

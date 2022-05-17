@@ -26,19 +26,55 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 		$errors[] = 'Product price is required';
 	}
 
+	// check if the images directory exist or not.
+	// if exists, the temporary image will store in that directory with the random index string
+	if (!is_dir('images')) {
+		mkdir('images');
+	}
+
 	if (empty($errors)) {
+		// check if the image have been uploaded
+		$image = $_FILES['image'] ?? null;
+		$imagePath = '';
+
+		if ($image && $image['tmp_name']) {
+			$imagePath = 'images/' . randomString(8) . '/' . $image['name'];
+			mkdir(dirname($imagePath));
+
+			move_uploaded_file($image['tmp_name'], $imagePath);
+		}
+
+		// exit;
+
 		// insert the data into the database and save it
 		$statement = $pdo->prepare("INSERT INTO products (image, title, description, price, created_at) VALUES (:image, :title, :description, :price, :date)");
 
-		$statement->bindValue(':image', '');
+		$statement->bindValue(':image', $imagePath);
 		$statement->bindValue(':title', $title);
 		$statement->bindValue(':description', $description);
 		$statement->bindValue(':price', $price);
 		$statement->bindValue(':date', $date);
 
 		$statement->execute();
+
+		// redirect to the root page
+		header('Location: index.php');
 	}
 }
+
+function randomString($n)
+{
+	$characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+	$str = '';
+
+	for ($i = 0; $i < $n; $i++) {
+		$index = rand(0, strlen($characters) - 1);
+		$str .= $characters[$index];
+	}
+
+	return $str;
+}
+
 ?>
 <!doctype html>
 <html lang="en">
@@ -66,7 +102,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 		<?php endforeach ?>
 	</div>
 	<?php endif ?>
-	<form action="" method="post">
+	<form action="" method="post" enctype="multipart/form-data">
 		<div class="form-group">
 			<label>Product Image</label>
 			<br>

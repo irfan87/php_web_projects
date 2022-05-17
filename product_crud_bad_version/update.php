@@ -2,18 +2,30 @@
 $pdo = new PDO('mysql:host=localhost;port=3306;dbname=products_crud', 'root', '');
 $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
+$id = $_GET['id'] ?? null;
+
+if (!$id) {
+	header('Location: index.php');
+	exit;
+}
+
+// select the product base on it's ID
+$statement = $pdo->prepare('SELECT * FROM products WHERE id = :id');
+$statement->bindValue(':id', $id);
+$statement->execute();
+$product = $statement->fetch(PDO::FETCH_ASSOC);
+
 $errors = [];
 
-$title = '';
-$price = '';
-$description = '';
+$title = $product['title'];
+$price = $product['price'];
+$description = $product['description'];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	// save the data without the image
 	$title = $_POST['title'];
 	$description = $_POST['description'];
 	$price = $_POST['price'];
-	$date = date('Y-m-d H:i:s');
 
 	// validate forms below
 	if (!$title) {
@@ -34,9 +46,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	if (empty($errors)) {
 		// check if the image have been uploaded
 		$image = $_FILES['image'] ?? null;
-		$imagePath = '';
+		$imagePath = $product['image'];
 
 		if ($image && $image['tmp_name']) {
+
+			if ($product['image']) {
+				unlink($product['image']);
+			}
+
 			$imagePath = 'images/' . randomString(8) . '/' . $image['name'];
 			mkdir(dirname($imagePath));
 
@@ -44,13 +61,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 		}
 
 		// insert the data into the database and save it
-		$statement = $pdo->prepare("INSERT INTO products (image, title, description, price, created_at) VALUES (:image, :title, :description, :price, :date)");
+		$statement = $pdo->prepare("UPDATE products SET image = :image, title = :title, description = :description, price = :price WHERE id = :id");
 
+		$statement->bindValue(':id', $id);
 		$statement->bindValue(':image', $imagePath);
 		$statement->bindValue(':title', $title);
 		$statement->bindValue(':description', $description);
 		$statement->bindValue(':price', $price);
-		$statement->bindValue(':date', $date);
 
 		$statement->execute();
 
@@ -89,7 +106,14 @@ function randomString($n)
 </head>
 
 <body>
-	<h1>Create New Product</h1>
+	<p>
+		<a href="index.php" class="btn btn-secondary">Back to Products</a>
+	</p>
+	<h1>Update Product
+		<strong>
+			<?php echo $product['title']; ?>
+		</strong>
+	</h1>
 	<?php if (!empty($errors)) : ?>
 	<div class="alert alert-danger">
 		<?php foreach ($errors as $error) : ?>
@@ -100,6 +124,9 @@ function randomString($n)
 	</div>
 	<?php endif ?>
 	<form action="" method="post" enctype="multipart/form-data">
+		<?php if ($product['image']) : ?>
+		<img src="<?php echo $product['image']; ?>" alt="" class="update-image">
+		<?php endif ?>
 		<div class="form-group">
 			<label>Product Image</label>
 			<br>

@@ -44,7 +44,7 @@ $products = $statement->fetchAll(PDO::FETCH_ASSOC);
 			<tr>
 				<th scope="row"><?php echo $i + 1 ?></th>
 				<td>
-					<?php echo $product['image'] ?>
+					<img src="<?php echo $product['image'] ?>" alt="" class="thumb-image">
 				</td>
 				<td>
 					<?php echo $product['title'] ?>

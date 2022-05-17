@@ -2,6 +2,10 @@
 $pdo = new PDO('mysql:host=localhost;port=3306;dbname=products_crud', 'root', '');
 $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
+echo "<pre>";
+var_dump($_POST);
+echo "</pre>";
+
 ?>
 <!doctype html>
 <html lang="en">
@@ -21,23 +25,23 @@ $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 <body>
 	<h1>Create New Product</h1>
 
-	<form>
+	<form action="" method="post">
 		<div class="form-group">
 			<label>Product Image</label>
 			<br>
-			<input type="file">
+			<input type="file" name="image">
 		</div>
 		<div class="form-group">
 			<label>Product Title</label>
-			<input type="text" class="form-control">
+			<input type="text" class="form-control" name="title">
 		</div>
 		<div class="form-group">
 			<label>Product Description</label>
-			<textarea class="form-control"></textarea>
+			<textarea class="form-control" name="description"></textarea>
 		</div>
 		<div class="form-group">
 			<label>Product Price</label>
-			<input type="number" step=".01" class="form-control">
+			<input type="number" step=".01" class="form-control" name="price">
 		</div>
 		<button type="submit" class="btn btn-primary">Submit</button>
 	</form>
